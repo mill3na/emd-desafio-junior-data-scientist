@@ -1,11 +1,11 @@
 import basedosdados as bd
 project_id = "dadosrio"
 
-def apply_query(query):
+def executar_consulta(query):
   return bd.read_sql(query, billing_project_id= project_id)
 
 
-def extract_array_substrings(df, key):
+def extrair_substring_array(df, key):
     all_values = df[key].tolist()
 
     str_values = [str(value) for value in all_values]
