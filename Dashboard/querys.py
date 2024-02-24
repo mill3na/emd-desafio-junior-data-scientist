@@ -8,6 +8,7 @@ quantidade_bairros = f"SELECT COUNT(*) as quantidade FROM {neighborhood_path};"
 maiores_bairros = f"SELECT nome, area FROM {neighborhood_path} ORDER BY area DESC LIMIT 5;"
 subprefeituras_mais_repetem = f"SELECT subprefeitura, COUNT(*) AS Recorrencia FROM {neighborhood_path} GROUP BY subprefeitura ORDER BY Recorrencia DESC LIMIT 5;"
 tipo_chamado_mais_recorrente = f"SELECT tipo, COUNT(*) AS total_ocorrencias FROM {main_path} GROUP BY tipo ORDER BY total_ocorrencias DESC LIMIT 1;"
+tipo_chamado_menos_recorrente = f"SELECT tipo, COUNT(*) AS total_ocorrencias FROM {main_path} GROUP BY tipo ORDER BY total_ocorrencias ASC LIMIT 1;"
 local_1000_chamados = f"SELECT latitude, longitude FROM {main_path} WHERE latitude IS NOT NULL AND longitude IS NOT NULL LIMIT 1000;"
 dia_mais_chamados = f"SELECT COUNT(*) AS total_chamados FROM {main_path} WHERE DATE(data_inicio) = (SELECT DATE(data_inicio) FROM {main_path} GROUP BY DATE(data_inicio) ORDER BY COUNT(*) DESC LIMIT 1);"
 quantidade_total_chamados = f"SELECT COUNT(*) AS total_chamados FROM {main_path} ;"
@@ -52,3 +53,41 @@ WHERE id_bairro IN (
     )
 );
 """
+
+bairros_com_mais_chamados = f"""
+SELECT 
+    b.nome AS nome_bairro,
+    c.recorrencia_bairro AS recorrencia
+FROM 
+    {neighborhood_path} b
+JOIN (
+    SELECT 
+        id_bairro,
+        COUNT(*) AS recorrencia_bairro 
+    FROM 
+        {main_path}
+    GROUP BY 
+        id_bairro
+    ORDER BY 
+        recorrencia_bairro DESC 
+    LIMIT 4
+) c ON b.id_bairro = c.id_bairro;
+
+"""
+
+subprefeitura_query = f"""
+SELECT subprefeitura
+FROM {neighborhood_path}
+WHERE id_bairro IN (
+    SELECT id_bairro
+    FROM (
+        SELECT id_bairro, COUNT(*) AS recorrencia_bairro 
+        FROM {main_path}
+        WHERE DATE(data_inicio) = '2023-04-01'
+        GROUP BY id_bairro 
+        ORDER BY recorrencia_bairro DESC 
+        LIMIT 1
+    )
+);
+"""
+

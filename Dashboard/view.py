@@ -5,7 +5,7 @@ import plotly.express as px
 import pandas as pd
 
 
-st.title("Escritório de dados do Rio de Janeiro - Dashboard Datario")
+st.title("Escritório de dados do Rio de Janeiro - Datario")
 
 st.header("Parte 1 - Análise dos bairros do Rio de Janeiro")
 
@@ -23,30 +23,7 @@ area_query = funcoes.executar_consulta(querys.maiores_bairros)
 area_bairros = pd.DataFrame(area_query, columns=["nome", "area"])
 st.bar_chart(area_bairros.set_index('nome'))
 
-# GRÁFICO 2 - pizza: maior cidade em relação à área total
 
-areatotal = 1200000000
-area_maior = float(area_bairros.iloc[0][1])
-
-porcentagem = (area_maior / areatotal) * 100
-
-nome_bairro = str(area_bairros.iloc[0][0])
-
-# Criar um DataFrame para plotagem
-dados = {'Área': [f'{nome_bairro}', 'Rio de Janeiro'],
-         'Porcentagem': [porcentagem, 100 - porcentagem]}
-comparacao_areas = pd.DataFrame(data=dados)
-
-# Gráfico de pizza usando Plotly Express
-custom_layout = {
-        "paper_bgcolor": "rgba(0,0,0,0)",  # cor para fundo do gráfico
-        "plot_bgcolor": "rgba(0,0,0,0)",   # cor para o fundo do plot
-        "font": {"color": "#2a3f5f"},      # cor do texto
-        "colorway": ['#1f77b4', '#aec7e8', '#7f7f7f', '#98df8a', '#2ca02c', '#d62728', '#ff7f0e', '#ffbb78', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5']  # Tons de azul
-}
-fig = px.pie(comparacao_areas, values='Porcentagem', names='Área', title=f'Porcentagem da área o bairro de {nome_bairro} em relação à Área Total da cidade. Muita coisa, né?')
-fig.update_layout(custom_layout)  # Aplica o layout personalizado
-st.plotly_chart(fig)
 
 # GRÁFICO 3 - prefeituras mais atuantes
 st.write("Cada bairro tem a sua subprefeitura, como acontece nas demais cidades do Brasil. No caso do Rio, algumas se repetem bastante, conforme mostrado no gráfico a seguir.")
@@ -105,9 +82,15 @@ st.write(f"☝️ No dia com mais chamados, foram registrados {quant_chamados_di
 # Lista de status desejados
 
 dados_chamados_por_status = funcoes.executar_consulta(querys.consulta_chamados_por_status)
+custom_layout = {
+        "paper_bgcolor": "rgba(0,0,0,0)",  # cor para fundo do gráfico
+        "plot_bgcolor": "rgba(0,0,0,0)",   # cor para o fundo do plot
+        "font": {"color": "#2a3f5f"},      # cor do texto
+        "colorway": ['#1f77b4', '#aec7e8', '#7f7f7f', '#98df8a', '#2ca02c', '#d62728', '#ff7f0e', '#ffbb78', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5']  # Tons de azul
+}
+
 if isinstance(dados_chamados_por_status, pd.DataFrame) and not dados_chamados_por_status.empty:
     
-
     # gráfico de pizza
     st.write(" > Distribuição dos chamados por status:")
     fig = px.pie(dados_chamados_por_status, values='total_chamados', names='status', title='Distribuição dos chamados por status')
