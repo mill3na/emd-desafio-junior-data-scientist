@@ -82,4 +82,4 @@ media = funcoes.extract_array_substrings(evento_maior_media_chamados, "media_dia
 
 # QUESTÃO 10 - Compare as médias diárias de chamados abertos desse subtipo durante os eventos específicos (Reveillon, Carnaval e Rock in Rio) e a média diária de chamados abertos desse subtipo considerando todo o período de 01/01/2022 até 31/12/2023. ✅
 df_comparacoes_por_evento = funcoes.apply_query(analise_sql.comparacao_medias_diarias)
-print(f"Comparações solicitadas: {df_comparacoes_por_evento}")
+# print(f"Comparações solicitadas: {df_comparacoes_por_evento}")
