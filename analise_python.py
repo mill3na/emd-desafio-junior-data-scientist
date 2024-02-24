@@ -9,6 +9,18 @@ def apply_query(query):
   return bd.read_sql(query, billing_project_id= project_id)
 
 
+def extract_array_substrings(df, key):
+    all_values = df[key].tolist()
+
+    str_values = [str(value) for value in all_values]
+
+    cleaned_values = [value.strip("'") for value in str_values]
+
+    str_list = ', '.join(cleaned_values)
+
+    return str_list
+
+
 # QUESTÃO 1 - Quantos chamados foram abertos no dia 01/04/2023? ✅
 quantity_query = f"""
 SELECT
@@ -21,7 +33,7 @@ WHERE
 
 df = apply_query(quantity_query)
 
-# print(f"\n\nO número total de chamados abertos em 2023-04-01 foi: {df}\n\n")
+# print(f"\n\nO número total de chamados abertos em 2023-04-01 foi: {df.values[0]}\n\n")
 
 
 # QUESTÃO 2 - Qual o tipo de chamado que teve mais teve chamados abertos no dia 01/04/2023? ✅
@@ -41,28 +53,37 @@ LIMIT
 """
 
 df = apply_query(order_by_type_query)
-print(f"\n\n O tipo de chamado com maior número de ocorrências foi: {df}\n\n")
+# print(f"\n\n O tipo de chamado com maior número de ocorrências foi: {df}\n\n")
 
 # QUESTÃO 3 - Quais os nomes dos 3 bairros que mais tiveram chamados abertos nesse dia? ✅
 
 location_query = f"""
-SELECT nome 
-FROM {neighborhood_path} 
-WHERE id_bairro IN (
-    SELECT id_bairro
-    FROM (
-        SELECT id_bairro, COUNT(*) AS recorrencia_bairro 
-        FROM {main_path} 
-        WHERE DATE(data_inicio) = '2023-04-01'
-        GROUP BY id_bairro 
-        ORDER BY recorrencia_bairro DESC 
-        LIMIT 3
-    )
-);
+SELECT 
+    b.nome AS nome_bairro,
+    c.recorrencia_bairro AS recorrencia
+FROM 
+    {neighborhood_path} b
+JOIN (
+    SELECT 
+        id_bairro,
+        COUNT(*) AS recorrencia_bairro 
+    FROM 
+        {main_path}
+    WHERE 
+        DATE(data_inicio) = '2023-04-01'
+    GROUP BY 
+        id_bairro
+    ORDER BY 
+        recorrencia_bairro DESC 
+    LIMIT 3
+) c ON b.id_bairro = c.id_bairro;
+
 """
 df = bd.read_sql(location_query, billing_project_id= project_id)
+bairros = extract_array_substrings(df, "nome_bairro")
+ocorrencias = extract_array_substrings(df, "recorrencia")
 
-# print(f"\n\n O nome dos 3 bairros com maior número de ocorrências é: {df}\n\n")
+print(f"\n\n Os 3 bairros com maior número de ocorrências são: {bairros}, com {ocorrencias} ocorrencias, respectivamente.\n\n")
 
 # Questão 4 - Qual o nome da subprefeitura com mais chamados abertos nesse dia? ✅
 
@@ -108,11 +129,11 @@ LEFT JOIN {neighborhood_path} AS b ON c.id_bairro = b.id_bairro
 WHERE DATE(c.data_inicio) = '2023-04-01' AND b.id_bairro IS NULL;
 """
 
-df = bd.read_sql(type_query, billing_project_id= project_id)
+# df = bd.read_sql(type_query, billing_project_id= project_id)
 # print(f"Tipo de ocorrência não associada à bairro ou subprefeitura: {df}")
 
 
-# Questão 6 - Quantos chamados com o subtipo "Perturbação do sossego" foram abertos desde 01/01/2022 até 31/12/2023 (incluindo extremidades)? ✅
+# QUESTÃO 6 - Quantos chamados com o subtipo "Perturbação do sossego" foram abertos desde 01/01/2022 até 31/12/2023 (incluindo extremidades)? ✅
 
 subtype_count_query = f"""
 SELECT
@@ -124,10 +145,10 @@ WHERE
   AND subtipo = 'Perturbação do sossego';
 """
 
-df = bd.read_sql(subtype_count_query, billing_project_id= project_id)
+# df = apply_query(subtype_count_query)
 # print(f"Quantidade de chamados abertos com subtipo Perturbaç!ao do sossego {df}")
 
-# Questão 7 - Selecione os chamados com esse subtipo que foram abertos durante os eventos contidos na tabela de eventos (Reveillon, Carnaval e Rock in Rio). ✅
+# QUESTÃO 7 - Selecione os chamados com esse subtipo que foram abertos durante os eventos contidos na tabela de eventos (Reveillon, Carnaval e Rock in Rio). ✅
 
 specific_ocurrences_by_event = f"""
 SELECT
@@ -146,11 +167,11 @@ WHERE
     'Rock in Rio');
 """
 
-df = bd.read_sql(specific_ocurrences_by_event, billing_project_id= project_id)
+# df = apply_query(specific_ocurrences_by_event)
 # print(f"Seleção de chamados abertos com subtipo Perturbação do sossego durante os eventos especificados: {df}")
 
 
-# Questão 8 - Quantos chamados desse subtipo foram abertos em cada evento? ✅
+# QUESTÃO 8 - Quantos chamados desse subtipo foram abertos em cada evento? ✅
 
 quantity_ocurrences_by_event = f"""
 SELECT
@@ -172,11 +193,11 @@ GROUP BY
   e.evento;
 """
 
-df = bd.read_sql(quantity_ocurrences_by_event, billing_project_id= project_id)
+# df = apply_query(quantity_ocurrences_by_event)
 # print(f"Quantidade de chamados abertos com subtipo Perturbação do sossego para cada evento específico: {df}")
 
 
-# 9. Qual evento teve a maior média diária de chamados abertos desse subtipo?  ✅
+# QUESTÃO 9. Qual evento teve a maior média diária de chamados abertos desse subtipo?  ✅
 
 bigger_mean_query = f"""
 SELECT
@@ -202,11 +223,11 @@ LIMIT
   1;
 """ 
 
-df = bd.read_sql(bigger_mean_query, billing_project_id= project_id)
+# df = apply_query(bigger_mean_query)
 # print(f"Maior média diária de chamados abertos com subtipo Perturbação do sossego para os eventos especificados: {df}")
 
 
-# Questão 10 - Compare as médias diárias de chamados abertos desse subtipo durante os eventos específicos (Reveillon, Carnaval e Rock in Rio) e a média diária de chamados abertos desse subtipo considerando todo o período de 01/01/2022 até 31/12/2023. ✅
+# QUESTÃO 10 - Compare as médias diárias de chamados abertos desse subtipo durante os eventos específicos (Reveillon, Carnaval e Rock in Rio) e a média diária de chamados abertos desse subtipo considerando todo o período de 01/01/2022 até 31/12/2023. ✅
 
 comparisons_query = f"""
   -- Média diária durante os eventos específicos
@@ -256,5 +277,5 @@ FROM
   media_diaria_total;
 """
 
-df = bd.read_sql(comparisons_query, billing_project_id= project_id)
+# df = apply_query(comparisons_query)
 # print(f"Comparações solicitadas: {df}")
