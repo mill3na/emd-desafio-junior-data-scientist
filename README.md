@@ -47,4 +47,5 @@ Para contribuir, sinta-se livre para criar issues no projeto e/ou entrar em cont
 
 ## Autoria
 Por Milena Maia
+<br>
 email: milenamaiaaraujo@gmail.com
