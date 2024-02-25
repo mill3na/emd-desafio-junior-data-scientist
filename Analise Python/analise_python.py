@@ -1,4 +1,3 @@
-import basedosdados as bd
 import analise_sql
 import funcoes
 
